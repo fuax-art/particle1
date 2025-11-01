@@ -1,5 +1,4 @@
-/* PARTICLE PLAYGROUND - ZEN GARDEN MODE STYLES */
-
+/* Add styles here */
 * {
     margin: 0;
     padding: 0;
@@ -52,13 +51,6 @@ body {
     overflow: hidden;
 }
 
-/* ZEN MODE HIGHLIGHT */
-.control-group.zen-highlight {
-    border: 3px solid rgba(0, 255, 200, 0.5);
-    background: linear-gradient(135deg, rgba(0, 255, 200, 0.1), rgba(100, 200, 255, 0.05));
-    box-shadow: 0 0 15px rgba(0, 255, 200, 0.2);
-}
-
 .control-group-header {
     cursor: crosshair;
     padding: 13px;
@@ -66,24 +58,23 @@ body {
 }
 
 .control-group h3 {
-    color: #0deef5;
+    color: #0deef5 ; /* Example accent color */
     margin-bottom: 8px;
     font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 1px;
-    display: inline-block;
-    margin-right: 10px;
+    display: inline-block; /* Allow space for icon */
+    margin-right: 10px; /* Space between text and icon */
 }
 
 .control-group-header span {
-    float: right;
+    float: right; /* Align icon to the right */
     transition: transform 0.9s ease;
 }
 
 .control-group-header.collapsed span {
     transform: rotate(-90deg);
 }
-
 .control-item {
     margin-bottom: 5px;
 }
@@ -97,7 +88,7 @@ label {
 
 .control-group-body {
     padding: 10px;
-    transition: max-height 0.9s ease-in-out;
+    transition: max-height 0.9s ease-in-out; /* Smooth collapse animation */
     overflow: hidden;
 }
 
@@ -134,45 +125,15 @@ button {
     padding: 10px;
     background: linear-gradient(45deg, #000000, #006568);
     border: none;
-    border-radius: 5px;
+    border-radius: 5合物;
     color: rgb(0, 225, 255);
     cursor: crosshair;
     font-weight: bold;
     transition: transform 0.9s;
-    margin-bottom: 5px;
 }
 
 button:hover {
     transform: translateY(-3px);
-}
-
-/* ZEN BUTTON SPECIAL STYLING */
-.zen-button {
-    background: linear-gradient(45deg, #00a896, #028090) !important;
-    color: #ffffff !important;
-    font-size: 14px;
-    padding: 12px !important;
-    box-shadow: 0 4px 15px rgba(0, 255, 200, 0.3);
-}
-
-.zen-button:hover {
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(0, 255, 200, 0.5);
-}
-
-/* ZEN INFO TEXT */
-.zen-info {
-    background: rgba(0, 255, 200, 0.1);
-    border: 1px solid rgba(0, 255, 200, 0.3);
-    border-radius: 5px;
-    padding: 8px;
-    margin-top: 10px;
-}
-
-.zen-info small {
-    color: rgba(0, 255, 200, 0.9);
-    font-size: 11px;
-    line-height: 1.4;
 }
 
 .value-display {
@@ -190,9 +151,8 @@ button:hover {
     font-size: 13px;
     color: #00eeff;
 }
-
 .hidden {
-    display: none;
+    display: none
 }
 
 .toggle-controls {
@@ -245,6 +205,7 @@ button:hover {
     opacity: 1 !important;
 }
 
+/* subtle pulse to draw attention */
 .toggle-controls::after {
     content: '';
     position: absolute;
@@ -257,6 +218,7 @@ button:hover {
     pointer-events: none;
 }
 
+/* accessibility helper */
 .sr-only {
     position: absolute !important;
     width: 1px !important;
@@ -288,7 +250,6 @@ button:hover {
         bottom: calc(60vh + 40px);
     }
 }
-
 #control-notification {
     position: absolute;
     top: 50%;
@@ -301,9 +262,10 @@ button:hover {
     z-index: 1001;
     opacity: 1;
     transition: opacity 1s ease-in-out;
-    pointer-events: none;
+    pointer-events: none; /* Allow clicks to pass through */
 }
 
+/* Style for the start button */
 #startButton {
     position: absolute;
     top: 50%;
@@ -330,4 +292,5 @@ button:hover {
     font-size: 20px;
     z-index: 1002;
     font-weight: bold;
+
 }

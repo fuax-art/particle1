@@ -1,38 +1,75 @@
-// PARTICLE PLAYGROUND - ZEN GARDEN OPTIMIZED VERSION
-// Enhanced for meditative, persistent particle accumulation
-
 // Global variables
 let scene, camera, renderer, particles, particleSystem, emitter;
 let animationId;
 let isAnimating = true;
+// controlsVisible should start false because the DOM initially has the 'hidden' class
 let controlsVisible = false;
-let pingPongDelay;
 
+let pingPongDelay; // Declare pingPongDelay globally
 // Tone.js instruments and effects
-let synth, bassSynth, guitarSynth;
-let distortion, reverb, feedbackDelay;
+let synth, bassSynth, guitarSynth; // Drum kit will be handled differently
+let distortion;
+let reverb; // Declare reverb globally
+let feedbackDelay; // Declare feedbackDelay globally
+// Current playing note (for sustain) and release timeout
 let currentPlayingNote = null;
 let releaseTimeout = null;
 
 let synthWaveNotes = [
-    "C4", "E4", "G4", "B4", "C5",
-    "G3", "B3", "D4", "G4",
-    "A3", "C4", "E4", "A4",
-    "F3", "A3", "C4", "F4",
-    "D4", "F4", "A4", "C5",
-    "E4", "G4", "B4", "D5",
-    "C4", "G4", "E5", "C5",
-    "G3", "D4", "A4", "E5"
+    "C4", "E4", "G4", "B4", "C5", // C Major chord and scale notes
+    "G3", "B3", "D4", "G4", // G Major chord and scale notes
+    "A3", "C4", "E4", "A4", // A minor chord and scale notes (can sound a bit more reflective)
+    "F3", "A3", "C4", "F4", // F Major chord and scale notes
+    "D4", "F4", "A4", "C5", // D minor chord and scale notes
+    "E4", "G4", "B4", "D5", // E minor chord and scale notes
+    "C4", "G4", "E5", "C5", // More spaced out notes for ambience
+    "G3", "D4", "A4", "E5"  // More spaced out notes for ambience
+
+
+
+/*synthWaveProgression2 = 
+    "C4", "G4", "A4", "F4", // Classic I-V-vi-IV progression, uplifting and familiar
+    "Dm4", "Am4", "Em4", "G4" // Adds a bit more melancholy and movement
+// This progression is bright and slightly emotional, good for a driving or cruising feel.
+
+
+/*synthWaveProgression3 = 
+    "A3", "E3", "C4", "G3", // A minor feel with a descending bassline, more introspective
+    "F3", "C4", "G4", "D4" // Opens up a bit, hinting at a brighter resolution but staying grounded
+// This progression has a more reflective and slightly melancholic feel, suitable for nighttime or atmospheric sections.
+
+
+ /*synthWaveProgression4 = 
+    "D4", "A4", "B4", "G4", // A strong starting point, slightly dramatic
+    "Em4", "G4", "C5", "A4" // Builds intensity and then resolves with a wider interval
+// This progression is more powerful and energetic, good for building tension or a climactic moment.
+
+/*synthWaveProgression5 = 
+   "D3", "B2", "A#2", "B2", "D#3", "B2", "A#2", "B2", spooky vibe
+    "D3", "B2", "A#2", "B2", "D#3", "B2", "A#2", "B2",
+    "D3", "B2", "A#2", "B2", "D#3", "B2", "A#2", "B2",
+    "G2", "E3", "D#3", "E3", "G#3", "E3", "D#3", "E3",
+    "G2", "E3", "D#3", "E3", "G#3", "E3", "D#3", "E3",
+    "G2", "E3", "D#3", "E3", "G#3", "E3", "D#3", "E3",
+    "C3", "B2", "E2", "C3", "B2", "E2", "E2", "E5",
+    "C3", "B2", "E2", "C3", "B2", "E2", "F2", "E4", "E4", "E4",
+    "E4", "C#4", "C4", "C#4", "F4", "C#4", "C4", "C#4",
+    "G3", "F3", "E3", "F3", "G#3", "F3", "E3", "F3",
+    "C3", "B2", "E2", "C3", "B2", "E2", "E2", "E5",
+    "C3", "B2", "E2", "C3", "B2", "E2", "F2", "D3", "D3", "D3", "B" */
 ];
 let currentNoteIndex = 0;
 let isAudioEnabled = true;
 
-// Particle system parameters - ZEN OPTIMIZED
+
+
+
+// Particle system parameters
 let particleParams = {
-    count: 20000, // DOUBLED for more accumulation
+    count: 10000,
     emissionRate: 69,
     gravity: -1,
-    initialSpeed: 3,
+    initialSpeed:3,
     spreadAngle: 133,
     airResistance: 0.1,
     startColor: new THREE.Color(0xffffff),
@@ -40,7 +77,7 @@ let particleParams = {
     size: 0.5,
     sizeVariation: 3,
     opacity: 0.7,
-    lifespan: 45, // 5X LONGER - was 9
+    lifespan: 9,
     turbulence: 1.3,
     shape: 'cube',
     blendMode: 'subtractive',
@@ -48,12 +85,9 @@ let particleParams = {
     windY: 1.5,
     windZ: 1,
     burstSize: 99,
-    trailDensity: 33,
-    zenMode: true, // NEW: Toggle for gentle fade behavior
-    ghostDuration: 8 // NEW: How long particles linger after "death"
+    trailDensity: 33
 };
-
-// Particle class - ZEN ENHANCED
+// Particle class
 class Particle {
     constructor(position, velocity) {
         this.position = position.clone();
@@ -88,42 +122,15 @@ class Particle {
         // Update life
         this.life -= deltaTime;
 
-        // ZEN MODE: Allow particles to persist in ghost state
-        if (particleParams.zenMode) {
-            return this.life > -particleParams.ghostDuration;
-        } else {
-            return this.life > 0;
-        }
+        return this.life > 0;
     }
 
     getLifeRatio() {
         return this.life / this.maxLife;
     }
-
-    // NEW: Get alpha based on life state
-    getAlpha() {
-        const lifeRatio = this.getLifeRatio();
-        
-        if (!particleParams.zenMode) {
-            // Normal mode: linear fade
-            return particleParams.opacity * Math.max(0, lifeRatio);
-        }
-        
-        // ZEN MODE: Gentle fade with ghost phase
-        if (lifeRatio > 0) {
-            // Normal life: full opacity fade
-            return particleParams.opacity * lifeRatio;
-        } else {
-            // Ghost phase: ultra-gentle fade
-            const ghostRatio = Math.max(0, 1 + (this.life / particleParams.ghostDuration));
-            // Gentler curve for more persistent visibility
-            const easedGhost = Math.pow(ghostRatio, 0.5); // Square root for slower fade
-            return particleParams.opacity * 0.25 * easedGhost;
-        }
-    }
 }
 
-// Particle system class - ZEN ENHANCED
+// Particle system class
 class ParticleSystem {
     constructor() {
         this.particles = [];
@@ -152,6 +159,7 @@ class ParticleSystem {
                     vAlpha = alpha;
                     vColor = color;
                     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                    // slightly smaller point size scale for better visual proportions
                     gl_PointSize = size * (150.0 / -mvPosition.z);
                     gl_Position = projectionMatrix * mvPosition;
                 }
@@ -214,6 +222,8 @@ class ParticleSystem {
     }
 
     update(deltaTime) {
+        // NOTE: automatic emission disabled - particles are emitted only via explicit calls
+
         // Update existing particles
         for (let i = this.particles.length - 1; i >= 0; i--) {
             if (!this.particles[i].update(deltaTime)) {
@@ -241,14 +251,13 @@ class ParticleSystem {
                 positions[i * 3 + 2] = particle.position.z;
 
                 // Interpolate color
-                const color = particleParams.startColor.clone().lerp(particleParams.endColor, 1 - Math.max(0, lifeRatio));
+                const color = particleParams.startColor.clone().lerp(particleParams.endColor, 1 - lifeRatio);
                 colors[i * 3] = color.r;
                 colors[i * 3 + 1] = color.g;
                 colors[i * 3 + 2] = color.b;
 
-                // ZEN MODE: Use particle's getAlpha method
-                sizes[i] = particle.size * Math.max(0.1, Math.abs(lifeRatio));
-                alphas[i] = particle.getAlpha();
+                sizes[i] = particle.size * lifeRatio;
+                alphas[i] = particleParams.opacity * lifeRatio;
             } else {
                 // Hide unused particles
                 positions[i * 3] = 0;
@@ -274,41 +283,43 @@ class ParticleSystem {
         };
         this.material.blending = blendModes[particleParams.blendMode];
     }
-
-    // NEW: Gentle clear function
-    gentleClear() {
-        this.particles.forEach(p => {
-            if (p.life > 0) {
-                p.life = Math.min(p.life, 3); // Cap at 3 seconds remaining
-            }
-        });
-    }
 }
-
-// Initialize Three.js scene
+// Initialize Three.js scene and setup event listener for start button
 async function init() {
+    // Scene
     scene = new THREE.Scene();
+
+    // Camera
     camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 15);
     camera.lookAt(0, 0, 0);
 
+    // Renderer
     renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
     document.getElementById('container').appendChild(renderer.domElement);
 
+    // Particle system
     particleSystem = new ParticleSystem();
+    
+    // Add gradient background sphere
     scene.add(createGradientSphere());
 
+    // Controls
     setupControls();
+
+    // Start animation (can start before audio context)
     animate();
+
+    // Mouse interaction (can be set up before audio context, but particle emission will be silent)
     setupMouseInteraction();
 
-    // Start button for audio context
+    // Add event listener to start button to initialize Tone.js and related audio
     document.getElementById('startButton').addEventListener('click', async () => {
-        await Tone.start();
-        console.log('AudioContext started');
-        
+        // Initialize Tone.js instruments and effects
+        await Tone.start(); // Start audio context here after user click
+        console.log('AudioContext started'); // Optional: log to confirm
         document.getElementById('disableAudioButton').addEventListener('click', async () => {
             if (isAudioEnabled) {
                 if (Tone.context.state !== 'closed') {
@@ -317,54 +328,73 @@ async function init() {
                 }
                 isAudioEnabled = false;
                 document.getElementById('disableAudioButton').textContent = 'Enable Audio';
+            } else {
+                // If you want to re-enable audio, you would re-initialize Tone.js here.
+                // For now, we'll just change the text back or leave it as is based on desired behavior.
+                // document.getElementById('disableAudioButton').textContent = 'Disable Audio';
+                // isAudioEnabled = true;
+                // initToneJs(); // You would need a function to re-initialize Tone.js
             }
         });
+        
 
         // Create Effects
         reverb = new Tone.Reverb({
-            decay: 5,
-            preDelay: 0.1
-        }).toDestination();
+            decay: 5, // Longer decay for a larger space
+            preDelay: 0.1 // Small pre-delay to separate the direct signal
+        }).toDestination(); // Connect the reverb directly to the main output
 
         feedbackDelay = new Tone.FeedbackDelay({
-            delayTime: "4n",
-            feedback: 0.6,
-            wet: 0.4
+            delayTime: "4n", // Quarter note delay
+            feedback: 0.6,   // Moderate feedback
+            wet: 0.4         // Mix
         });
 
         pingPongDelay = new Tone.PingPongDelay({
-            delayTime: "8n",
-            feedback: 0.5,
-            wet: 0.3
+            delayTime: "8n", // Eighth note delay
+            feedback: 0.5,   // Moderate feedback
+            wet: 0.3         // Mix
         });
 
+        // Connect effects in a chain: FeedbackDelay -> PingPongDelay -> Reverb -> Destination
         feedbackDelay.connect(pingPongDelay);
         pingPongDelay.connect(reverb);
-        distortion = new Tone.Distortion(0.4);
 
+
+        distortion = new Tone.Distortion(0.4); // Distortion effect - can connect this before or after delays
+
+        // Connect synths to the beginning of the effects chain
         synth = new Tone.Synth({
             oscillator: { type: "sine" },
             envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.5 }
-        }).chain(distortion, feedbackDelay);
-        try { synth.volume.value = -3.1; } catch (e) {}
+        }).chain(distortion, feedbackDelay); // Chain synth through distortion and then delays
+        // Lower overall synth output to roughly 70% perceived loudness (~ -3.1 dB)
+        try { synth.volume.value = -3.1; } catch (e) { /* ignore if not supported */ }
 
         bassSynth = new Tone.Synth({
             oscillator: { type: "square" },
             envelope: { attack: 0.001, decay: 0.2, sustain: 0.01, release: 0.3 }
-        }).chain(distortion, feedbackDelay);
-        try { bassSynth.volume.value = -3.1; } catch (e) {}
+        }).chain(distortion, feedbackDelay); // Chain bass synth through distortion and then delays
+        try { bassSynth.volume.value = -3.1; } catch (e) { /* ignore if not supported */ }
 
-        guitarSynth = new Tone.MonoSynth({}).chain(distortion, feedbackDelay);
+        // If you have guitarSynth and want it affected:
+        guitarSynth = new Tone.MonoSynth({
+            // ... guitarSynth parameters
+        }).chain(distortion, feedbackDelay); // Chain guitarSynth through distortion and then delays
 
+        // Hide the start button after it's clicked
         document.getElementById('startButton').style.display = 'none';
     });
 }
 
 function createGradientSphere() {
-    const sphereGeometry = new THREE.SphereGeometry(500, 100, 100);
+    // 1. Create a Sphere Geometry
+    const sphereGeometry = new THREE.SphereGeometry(500, 100, 100); // Adjust size as needed
+
+    // 2. Create a Gradient Texture
     const canvas = document.createElement('canvas');
-    canvas.width = 2;
-    canvas.height = 128;
+    canvas.width = 2; // Small width is enough for a linear gradient
+    canvas.height = 128; // Adjust height for smoother gradient
     const context = canvas.getContext('2d');
 
     const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
@@ -376,17 +406,21 @@ function createGradientSphere() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     const gradientTexture = new THREE.CanvasTexture(canvas);
-    gradientTexture.needsUpdate = true;
+    gradientTexture.needsUpdate = true; // Important for canvas textures
 
+    // 3. Create a Material
     const sphereMaterial = new THREE.MeshBasicMaterial({
         map: gradientTexture,
-        side: THREE.BackSide,
-        depthWrite: false
+        side: THREE.BackSide, // Render the inside of the sphere
+        depthWrite: false // Important for background objects
     });
 
+    // 4. Create a Mesh
     const gradientSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+
     return gradientSphere;
 }
+
 
 function setupControls() {
     const controls = document.querySelectorAll('input, select');
@@ -396,11 +430,13 @@ function setupControls() {
             updateParameter(e.target.id, e.target.value, e.target.type);
         });
 
+        // Initialize value displays
         if (control.type === 'range') {
             updateValueDisplay(control.id, control.value);
         }
     });
 
+    // Setup collapsible headers
     document.querySelectorAll('.control-group-header').forEach(header => {
         header.addEventListener('click', () => {
             const body = header.nextElementSibling;
@@ -408,18 +444,22 @@ function setupControls() {
             if (header.classList.contains('collapsed')) {
                 body.style.maxHeight = '0';
             } else {
+                // Calculate height needed for content
                 body.style.maxHeight = body.scrollHeight + 'px';
             }
         });
     });
 
+    // Toggle-controls button behaviour: dim on click, restore after 1s hover
     const toggleBtn = document.querySelector('.toggle-controls');
     if (toggleBtn) {
         let hoverRestoreTimer = null;
         toggleBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            // toggle controls and ensure aria is updated by toggleControls()
             try { toggleControls(); } catch (err) {}
+            // add dimmed state when interacted with
             toggleBtn.classList.add('dimmed');
         });
 
@@ -435,17 +475,17 @@ function setupControls() {
             if (hoverRestoreTimer) { clearTimeout(hoverRestoreTimer); hoverRestoreTimer = null; }
         });
 
+        // Touch support: restore after finger lifts and 1s hover-equivalent
         toggleBtn.addEventListener('touchstart', (e) => {
+            // On touch, open controls immediately and dim
             try { toggleControls(); } catch (err) {}
             toggleBtn.classList.add('dimmed');
         }, { passive: true });
-        
         toggleBtn.addEventListener('touchend', () => {
             setTimeout(() => toggleBtn.classList.remove('dimmed'), 1000);
         });
     }
 }
-
 function updateParameter(id, value, type) {
     const numValue = type === 'color' ? value : parseFloat(value);
 
@@ -527,13 +567,6 @@ function updateParameter(id, value, type) {
             particleParams.trailDensity = parseInt(value);
             updateValueDisplay(id, value);
             break;
-        case 'zenMode':
-            particleParams.zenMode = value === 'true';
-            break;
-        case 'ghostDuration':
-            particleParams.ghostDuration = numValue;
-            updateValueDisplay(id, value + 's');
-            break;
     }
 }
 
@@ -543,14 +576,16 @@ function updateValueDisplay(id, value) {
         display.textContent = value;
     }
 }
-
 function playNextSynthWaveNote() {
     const note = synthWaveNotes[currentNoteIndex];
-    const duration = "16n";
+    const duration = "16n"; // Shorter duration for drag trail notes
+    // Check if synths are initialized before playing
     if (synth && bassSynth) {
         synth.triggerAttackRelease(note, duration);
-        bassSynth.triggerAttackRelease(note, duration);
+        bassSynth.triggerAttackRelease(note, duration); // Play bass note as well
     }
+
+
     currentNoteIndex = (currentNoteIndex + 1) % synthWaveNotes.length;
 }
 
@@ -560,8 +595,10 @@ function setupMouseInteraction() {
     let previousMouseX = 0, previousMouseY = 0;
     let cameraRotationX = 0, cameraRotationY = 0;
     let touchStartTime = 0;
+    // Variables for throttling note playback during drag
     let lastNotePlaybackTime = 0;
 
+    // Helper: compute position-based note (similar mapping to index00 reference)
     function getPositionNoteFromClient(clientX, clientY) {
         const normalizedX = Math.max(0, Math.min(1, clientX / window.innerWidth));
         const normalizedY = Math.max(0, Math.min(1, clientY / window.innerHeight));
@@ -614,11 +651,14 @@ function setupMouseInteraction() {
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
 
+    // Convert screen coordinates to 3D world position
     function getWorldPosition(clientX, clientY) {
         mouse.x = (clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
         raycaster.setFromCamera(mouse, camera);
+
+        // Create an invisible plane to intersect with
         const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
         const intersectPoint = new THREE.Vector3();
         raycaster.ray.intersectPlane(plane, intersectPoint);
@@ -626,8 +666,10 @@ function setupMouseInteraction() {
         return intersectPoint;
     }
 
+    // Emit particles at specific position
     function emitAtPosition(worldPos) {
         const currentTime = Date.now();
+        // Throttle emissions to avoid overwhelming the system
         if (currentTime - lastEmissionTime > 50) {
             const burstCount = Math.min(particleParams.trailDensity, particleParams.emissionRate);
             if (particleSystem) {
@@ -637,12 +679,14 @@ function setupMouseInteraction() {
         }
     }
 
+    // Mouse events
     document.addEventListener('mousemove', (event) => {
         if (!event.target.closest('#controls') && !event.target.closest('.toggle-controls') && !event.target.closest('#startButton')) {
             if (isDragging) {
                 const worldPos = getWorldPosition(event.clientX, event.clientY);
                 emitAtPosition(worldPos);
 
+                // Position-based note playback (throttled)
                 if (Date.now() - lastNotePlaybackTime > 100) {
                     if (synth) {
                         playNoteStartAt(event.clientX, event.clientY);
@@ -658,59 +702,70 @@ function setupMouseInteraction() {
             isDragging = true;
             previousMouseX = event.clientX;
             previousMouseY = event.clientY;
-            touchStartTime = Date.now();
-            event.preventDefault();
+            touchStartTime = Date.now(); // Use touchStartTime for mouse clicks too
+            event.preventDefault(); // Prevent default to avoid dragging issues
+            // start sustaining a note at click start
             playNoteStartAt(previousMouseX, previousMouseY);
         }
     });
 
-    document.addEventListener('mouseup', (event) => {
+    document.addEventListener('mouseup', (event) => { // Added event parameter
         if (isDragging) {
             isDragging = false;
+            // Detect click/tap based on duration and movement
             const duration = Date.now() - touchStartTime;
+            // Calculate approximate distance moved (simple check)
             const deltaX = event.clientX - previousMouseX;
             const deltaY = event.clientY - previousMouseY;
             const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-            if (duration < 300 && moveDistance < 5) {
+            // If it's a short duration and minimal movement, treat as a click/tap
+            if (duration < 300 && moveDistance < 5) { // Adjust threshold as needed
                 const worldPos = getWorldPosition(previousMouseX, previousMouseY);
                 if (particleSystem) {
                     particleSystem.emit(particleParams.burstSize, worldPos);
                 }
+                // Check if synths are initialized before playing
                 if (synth) {
-                   playChord();
+                   playChord(); // Play a chord on click/tap
                 }
             }
 
+            // schedule a short release of the sustained note
             stopPlayingSoon();
         }
 
-        lastNotePlaybackTime = 0;
+        // Reset drag specific variables on mouseup/touchend
+        lastNotePlaybackTime = 0; // Reset note throttle
     });
 
+    // Touch events for mobile and touchpads
     document.addEventListener('touchstart', (event) => {
         if (!event.target.closest('#controls') && !event.target.closest('.toggle-controls') && !event.target.closest('#startButton')) {
-            if (event.touches.length === 1) {
+            if (event.touches.length === 1) { // Single touch for drag or tap
                 isDragging = true;
                 previousMouseX = event.touches[0].clientX;
                 previousMouseY = event.touches[0].clientY;
-                touchStartTime = Date.now();
-                event.preventDefault();
-            } else if (event.touches.length > 1) {
+                touchStartTime = Date.now(); // Record touch start time for tap detection
+                 event.preventDefault(); // Prevent default behavior for single touch
+            } else if (event.touches.length > 1) { // Multi-touch for camera control
+                 // Store starting positions of touches for calculating movement
                 previousMouseX = event.touches[0].clientX;
                 previousMouseY = event.touches[0].clientY;
-                event.preventDefault();
+                 // Prevent default scrolling/zooming
+                 event.preventDefault();
             }
         }
     }, { passive: false });
 
     document.addEventListener('touchmove', (event) => {
         if (!event.target.closest('#controls') && !event.target.closest('.toggle-controls') && !event.target.closest('#startButton')) {
-            if (isDragging && event.touches.length === 1) {
+            if (isDragging && event.touches.length === 1) { // Single touch drag for particle trail
                 const touch = event.touches[0];
                 const worldPos = getWorldPosition(touch.clientX, touch.clientY);
                 emitAtPosition(worldPos);
 
+                // Position-based note playback (throttled)
                 if (Date.now() - lastNotePlaybackTime > 100) {
                     if (synth) {
                         playNoteStartAt(touch.clientX, touch.clientY);
@@ -718,65 +773,80 @@ function setupMouseInteraction() {
                     lastNotePlaybackTime = Date.now();
                 }
 
+                // Update previous touch positions for the next frame
                 previousMouseX = touch.clientX;
                 previousMouseY = touch.clientY;
-                event.preventDefault();
-            } else if (event.touches.length > 1) {
-                const touch1 = event.touches[0];
-                const deltaX = touch1.clientX - previousMouseX;
-                const deltaY = touch1.clientY - previousMouseY;
 
-                cameraRotationY += deltaX * 0.005;
-                cameraRotationX += deltaY * 0.005;
-                cameraRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotationX));
-
-                previousMouseX = touch1.clientX;
-                previousMouseY = touch1.clientY;
                 event.preventDefault();
+            } else if (event.touches.length > 1) { // Two-finger drag for camera control
+                 const touch1 = event.touches[0];
+                 // Use the movement of the first touch relative to its previous position
+                 const deltaX = touch1.clientX - previousMouseX;
+                 const deltaY = touch1.clientY - previousMouseY;
+
+                 cameraRotationY += deltaX * 0.005;
+                 cameraRotationX += deltaY * 0.005;
+
+                 // Clamp vertical rotation to prevent flipping
+                 cameraRotationX = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, cameraRotationX));
+
+                 // Update previous touch positions for the next frame
+                 previousMouseX = touch1.clientX;
+                 previousMouseY = touch1.clientY;
+
+                 event.preventDefault(); // Prevent default scrolling/zooming
             }
         }
     }, { passive: false });
 
     document.addEventListener('touchend', (event) => {
         if (!event.target.closest('#controls') && !event.target.closest('.toggle-controls') && !event.target.closest('#startButton')) {
-            if (isDragging && event.touches.length === 0) {
+             if (isDragging && event.touches.length === 0) { // Single touch ended
                 isDragging = false;
+                // Detect tap based on duration and movement
                 const duration = Date.now() - touchStartTime;
+                // Calculate approximate distance moved (simple check)
+                // Need to use the last touch position captured in touchmove
                 const touch = event.changedTouches[0];
                 const deltaX = touch.clientX - previousMouseX;
                 const deltaY = touch.clientY - previousMouseY;
                 const moveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-                if (duration < 300 && moveDistance < 5) {
-                    const worldPos = getWorldPosition(previousMouseX, previousMouseY);
-                    if (particleSystem) {
+                // If it's a short duration and minimal movement, treat as a click/tap
+                if (duration < 300 && moveDistance < 5) { // Adjust threshold as needed
+                     const worldPos = getWorldPosition(previousMouseX, previousMouseY);
+                     if (particleSystem) {
                         particleSystem.emit(particleParams.burstSize, worldPos);
                     }
+                    // Check if synths are initialized before playing
                     if (synth) {
-                        playChord();
+                        playChord(); // Play a chord on click/tap
                     }
                 }
+                // schedule short release of sustained note
                 stopPlayingSoon();
             }
         }
     });
 
+    // Safety: ensure note releases if mouseup/touchend occurs outside expected handlers
     document.addEventListener('mouseup', () => {
         stopPlayingSoon();
     });
-    
     document.addEventListener('touchend', () => {
         stopPlayingSoon();
     }, { passive: true });
 
+    // Smooth camera movement (This function remains largely the same)
     function updateCamera() {
-        const radius = 15;
+        const radius = 15; // Maintain a constant distance
         camera.position.x = radius * Math.sin(cameraRotationY) * Math.cos(cameraRotationX);
         camera.position.y = radius * Math.sin(cameraRotationX);
         camera.position.z = radius * Math.cos(cameraRotationY) * Math.cos(cameraRotationX);
         camera.lookAt(0, 0, 0);
     }
 
+    // Add to animation loop (This part should already be there, ensure updateCamera is called)
     const originalAnimate = animate;
     animate = function() {
         updateCamera();
@@ -786,12 +856,14 @@ function setupMouseInteraction() {
     function playChord() {
         const noteIndex = Math.floor(Math.random() * synthWaveNotes.length);
         const root = synthWaveNotes[noteIndex];
-        const chord = Tone.Frequency(root).harmonize([0, 4, 7]);
+        const chord = Tone.Frequency(root).harmonize([0, 4, 7]); // Simple major triad
+        // Check if synth is initialized before playing
         if (synth) {
             synth.triggerAttackRelease(chord, "0.5");
         }
     }
 }
+
 
 // Animation loop
 let lastTime = 0;
@@ -807,10 +879,12 @@ function animate() {
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
 
+    // Update particle system
     if (particleSystem) {
         particleSystem.update(deltaTime);
     }
 
+    // Update stats
     frameCount++;
     fpsTimer += deltaTime;
 
@@ -821,6 +895,7 @@ function animate() {
         fpsTimer = 0;
     }
 
+    // Render
     renderer.render(scene, camera);
 }
 
@@ -834,6 +909,7 @@ function toggleControls() {
     } else {
         controls.classList.add('hidden');
     }
+    // update aria-expanded on toggle button for accessibility
     const toggleBtn = document.querySelector('.toggle-controls');
     if (toggleBtn) {
         try { toggleBtn.setAttribute('aria-expanded', controlsVisible ? 'true' : 'false'); } catch (e) {}
@@ -856,15 +932,8 @@ function toggleAnimation() {
     }
 }
 
-// NEW: Gentle clear function
-function gentleClear() {
-    if (particleSystem) {
-        particleSystem.gentleClear();
-    }
-}
-
 function resetToDefaults() {
-    document.getElementById('particleCount').value = 20000;
+    document.getElementById('particleCount').value = 3399;
     document.getElementById('emissionRate').value = 69;
     document.getElementById('gravity').value = -1;
     document.getElementById('initialSpeed').value = 3;
@@ -875,7 +944,7 @@ function resetToDefaults() {
     document.getElementById('particleSize').value = 3.9;
     document.getElementById('sizeVariation').value = 3.5;
     document.getElementById('opacity').value = 0.7;
-    document.getElementById('lifespan').value = 45;
+    document.getElementById('lifespan').value = 9;
     document.getElementById('turbulence').value = 1.3;
     document.getElementById('particleShape').value = 'cube';
     document.getElementById('blendMode').value = 'subtactive';
@@ -885,14 +954,17 @@ function resetToDefaults() {
     document.getElementById('burstSize').value = 99;
     document.getElementById('trailDensity').value = 33;
 
+    // Trigger updates
     document.querySelectorAll('input, select').forEach(control => {
         control.dispatchEvent(new Event('input'));
     });
 }
 
+// Handle window resize
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    // Re-calculate max-height for collapsible sections on resize
     document.querySelectorAll('.control-group-header:not(.collapsed)').forEach(header => {
         const body = header.nextElementSibling;
         if (body) {
@@ -902,15 +974,18 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+// Initialize the app when the window loads
 window.onload = function() {
-    init();
+    init(); // Call the init function to set up the scene, etc.
 
     const notification = document.getElementById('control-notification');
     if (notification) {
+        // Fade out after 5 seconds
         setTimeout(() => {
             notification.style.opacity = '0';
-        }, 5000);
+        }, 5000); // 5000 milliseconds = 5 seconds
 
+        // Remove the element after the transition
         notification.addEventListener('transitionend', () => {
             notification.style.display = 'none';
         });

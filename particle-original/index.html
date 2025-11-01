@@ -3,47 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Paradigm of Peculiar Particles - Zen Garden Mode</title>
+    <title>A Paradigm of Peculiar Particles</title>
+    <!-- Link to your style.css file -->
     <link rel="stylesheet" href="style.css">
+    <!-- Link to Three.js and Tone.js libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <div id="container">
         <button class="toggle-controls" title="Toggle Controls" aria-expanded="false">
+            <!-- brand SVG placeholder: using external file 'fuaxface.svg' so you can update it without editing HTML -->
             <img src="fuaxface.svg" alt="Brand" class="brand-icon" aria-hidden="true" />
             <span class="sr-only">Controls</span>
         </button>
 
         <div id="controls" class="hidden">
-            <!-- NEW: ZEN MODE SECTION -->
-            <div class="control-group zen-highlight">
-                <div class="control-group-header">
-                    <h3>🧘 Zen Garden Mode</h3>
-                    <span>▼</span>
-                </div>
-                <div class="control-group-body">
-                    <div class="control-item">
-                        <label>Enable Zen Mode</label>
-                        <select id="zenMode">
-                            <option value="true" selected>On (Gentle Fade)</option>
-                            <option value="false">Off (Normal)</option>
-                        </select>
-                    </div>
-                    <div class="control-item">
-                        <label>Ghost Duration</label>
-                        <input type="range" id="ghostDuration" min="2" max="20" value="8" step="1">
-                        <div class="value-display" id="ghostDurationValue">8s</div>
-                    </div>
-                    <div class="control-item">
-                        <button onclick="gentleClear()" class="zen-button">🌊 Gentle Clear</button>
-                    </div>
-                    <div class="zen-info">
-                        <small>Zen mode makes particles linger and fade gracefully. Gentle Clear lets them peacefully dissolve.</small>
-                    </div>
-                </div>
-            </div>
-
             <div class="control-group">
                 <div class="control-group-header">
                     <h3>Interaction</h3>
@@ -68,17 +43,15 @@
                     <h3>Emission</h3>
                     <span>▼</span>
                 </div>
+                <div class="control-item">
+                    <label>Particle Count</label>
+                    <input type="range" id="particleCount" min="100" max="10000" value="3399" step="25">
+                    <div class="value-display" id="particleCountValue">3399</div>
+                </div>
                 <div class="control-group-body">
-                    <div class="control-item">
-                        <label>Particle Count (Max)</label>
-                        <input type="range" id="particleCount" min="100" max="20000" value="20000" step="100">
-                        <div class="value-display" id="particleCountValue">20000</div>
-                    </div>
-                    <div class="control-item">
-                        <label>Emission Rate</label>
-                        <input type="range" id="emissionRate" min="1" max="100" value="69" step="1">
-                        <div class="value-display" id="emissionRateValue">69/s</div>
-                    </div>
+                    <label>Emission Rate</label>
+                    <input type="range" id="emissionRate" min="1" max="100" value="69" step="1">
+                    <div class="value-display" id="emissionRateValue">69/s</div>
                 </div>
             </div>
 
@@ -143,6 +116,7 @@
                 </div>
             </div>
 
+
             <div class="control-group">
                 <div class="control-group-header">
                     <h3>Behavior</h3>
@@ -151,8 +125,8 @@
                 <div class="control-group-body">
                     <div class="control-item">
                         <label>Lifespan</label>
-                        <input type="range" id="lifespan" min="1" max="90" value="45" step="1">
-                        <div class="value-display" id="lifespanValue">45s</div>
+                        <input type="range" id="lifespan" min="1" max="20" value="9" step="0.5">
+                        <div class="value-display" id="lifespanValue">9s</div>
                     </div>
                     <div class="control-item">
                         <label>Turbulence</label>
@@ -165,6 +139,7 @@
                             <option value="cube">Cube</option>
                             <option value="point">Point</option>
                             <option value="sphere">Sphere</option>
+
                         </select>
                     </div>
                     <div class="control-item">
@@ -176,35 +151,35 @@
                         </select>
                     </div>
                 </div>
-            </div>
 
-            <div class="control-group">
-                <div class="control-group-header">
-                    <h3>Environment</h3>
-                    <span>▼</span>
-                </div>
-                <div class="control-group-body">
-                    <div class="control-item">
-                        <label>Wind X</label>
-                        <input type="range" id="windX" min="-3" max="3" value="-1.5" step="0.01">
-                        <div class="value-display" id="windXValue">-1.5</div>
+                <div class="control-group">
+                    <div class="control-group-header">
+                        <h3>Environment</h3>
+                        <span>▼</span>
                     </div>
-                    <div class="control-item">
-                        <label>Wind Y</label>
-                        <input type="range" id="windY" min="-3" max="3" value="1.5" step="0.01">
-                        <div class="value-display" id="windYValue">1.5</div>
+                    <div class="control-group-body">
+                        <div class="control-item">
+                            <label>Wind X</label>
+                            <input type="range" id="windX" min="-3" max="3" value="-1.5" step="0.01">
+                            <div class="value-display" id="windXValue">-1.5</div>
+                        </div>
+                        <div class="control-item">
+                            <label>Wind Y</label>
+                            <input type="range" id="windY" min="-3" max="3" value="1.5" step="0.01">
+                            <div class="value-display" id="windYValue">1.5</div>
+                        </div>
+                        <div class="control-item">
+                            <label>Wind Z</label>
+                            <input type="range" id="windZ" min="-3" max="3" value="1" step="0.01">
+                            <div class="value-display" id="windZValue">1</div>
+                        </div>
                     </div>
-                    <div class="control-item">
-                        <label>Wind Z</label>
-                        <input type="range" id="windZ" min="-3" max="3" value="1" step="0.01">
-                        <div class="value-display" id="windZValue">1</div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="control-group">
-                <button onclick="resetToDefaults()">Reset to Zen Defaults</button>
-                <button onclick="toggleAnimation()" id="animationButton">Pause</button>
+                    <div class="control-group">
+                        <button onclick="resetToDefaults()">Reset to Defaults</button>
+                        <button onclick="toggleAnimation()" id="animationButton">Pause</button>
+                    </div>
+                </div>
             </div>
 
             <div id="stats">
@@ -212,11 +187,15 @@
                 <div>FPS: <span id="fps">60</span></div>
             </div>
 
+            <!-- Add the start button here -->
+
+            <!-- Add the disable audio button here -->
             <button id="disableAudioButton">Disable Audio</button>
             <button id="startButton">Start Experience</button>
+
         </div>
 
+        <!-- Link to your main.js file -->
         <script src="main.js"></script>
-    </div>
-</body>
-</html>
+    </body>
+    </html>
