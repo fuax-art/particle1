@@ -132,7 +132,7 @@ class Particle {
             const ghostRatio = Math.max(0, 1 + (this.life / particleParams.ghostDuration));
             // Much slower curve - cubic root for even gentler fade
             const easedGhost = Math.pow(ghostRatio, 0.33);
-            return particleParams.opacity * 0.4 * easedGhost; // 40% opacity in ghost
+            return particleParams.opacity * 0.6 * easedGhost; // 60% opacity in ghost
         }
     }
 }
